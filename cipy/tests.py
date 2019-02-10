@@ -4,7 +4,7 @@ import time
 
 from sklearn.metrics import mean_absolute_error
 from confidence_intervals import percentile, paired_percentile, bca, paired_bca, cluster_percentile
-from ci import SignificanceTest
+from mlboot import BootstrapCI
 
 def generate_data(n):
     labels = np.random.randn(n) * 3 + 1.63
@@ -98,5 +98,5 @@ if __name__ == "__main__":
     print(f"Running paired cluster percentile test on {n} data points on average takes {gap / n_runs} seconds")
     
     # test the unified API
-    lo, hi, scores = SignificanceTest(preds1, labels, "mean_absolute_error")
+    lo, hi, scores = BootstrapCI(preds1, labels, "mean_absolute_error")
     print(f"Running the unified API with BCa yields [{lo}, {hi}] interval.")
