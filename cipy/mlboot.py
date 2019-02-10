@@ -5,7 +5,7 @@ import sklearn
 from sklearn.utils import resample
 from utils import get_ci, get_metric
 
-def SignificanceTest(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000):
+def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000):
 
     # ensure all input are converted into numpy for convenience reasons
     pred1 = np.array(pred1).reshape(-1)

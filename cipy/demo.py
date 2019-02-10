@@ -1,14 +1,12 @@
 from ci import SignificanceTest
 from nltk.translate.bleu_score import corpus_bleu
-
+from pdb import set_trace
 
 def bleu_score(corpus1, corpus2):
-    corpus1 = corpus1.tolist()
-    corpus2 = corpus2.tolist()
-
-    corpus1 = list(map(lambda x: [x], corpus1))
     return corpus_bleu(corpus1, corpus2)
 
+def dummy(cor1, cor2):
+    return 1.0
 
 if __name__ == "__main__":
     labels = []
@@ -23,5 +21,5 @@ if __name__ == "__main__":
             preds2.append(line2)
             labels.append(line)
 
-    
-    SignificanceTest(preds1, labels, bleu_score, pred2=preds2, type_of_ci='paired_percentile', num_bootstrap=1000)
+    labels = list(map(lambda x: [x], labels)) 
+    # SignificanceTest(preds1, labels, corpus_bleu, pred2=preds2, type_of_ci='paired_percentile', num_bootstrap=1000)

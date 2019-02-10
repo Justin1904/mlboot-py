@@ -28,13 +28,13 @@ def log(lo, hi, alpha, n_samples, n_boot, method, comment=None):
     '''
     Logging the CI info
     '''
-    print("="*20)
+    print("="*40)
     if comment is not None:
         print(comment)
     print(f"Confidence Interval: [{round(lo, 4)}, {round(hi, 4)}], confidence level: {1-alpha}")
     print(f"Number of samples in each bootstrap: {n_samples}\nNumber of total bootstrap runs: {n_boot}")
     print(f"Confidence interval type: {method}")
-    print("="*20)
+    print("="*40)
 
 
 def groupby(a, axis=0):
