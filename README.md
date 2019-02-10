@@ -26,6 +26,9 @@ just replace `/path/to/mlboot-py/cipy` with the actual path you cloned the repo 
 
 ## Usage
 
+
+### Getting Started
+
 This package aims to provide easy to use confidence interval estimations for model performances. To start with, we generate some toy regression results and compute the overall mean absolute error
 
 ``` python
@@ -59,8 +62,23 @@ Confidence interval type: BCa
 ========================================
 ```
 
-it shows the ***confidence*** interval, the ***confidence level*** of this interval, as well as the bootstrap settings such as ***sample sizes*** and ***number of bootstrap runs***. It also shows the ***method*** used for computing confidence interval. Here by default it is `BCa`, bias-corrected accelerated confidence interval. As you may have guessed, each of these mentioned parameters are optionally tweakable arguments for `BootstrapCI`
+it shows the ***confidence*** interval, the ***confidence level*** of this interval, as well as the bootstrap settings such as ***sample sizes*** and ***number of bootstrap runs***. It also shows the ***method*** used for computing confidence interval. Here (by default) it is `BCa`, bias-corrected accelerated confidence interval. As you may have guessed, each of these mentioned parameters are optionally tweakable arguments for `BootstrapCI`. The API is as follows:
 
+```
+def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000)
+
+--pred2: the predictions of a different model you want to compare to. Can only be used with paired bootstrap confidence intervals.
+
+--cluster: an array of same length as input, indicating the clustering of your data. Can only be used with cluster bootstrap confidence intervals.
+
+--type_of_ci: a string indicating the type of confidence interval method to use here. Currently support "bca", "paired_bca", "percentile", "paired_percentile", "cluster_percentile".
+
+--confidence_level: the confidence level you want for your interval. The higher the confidence, the wider the interval will be.
+
+--sample_size: defaults to the length of input.
+
+--num_bootstrap: the number of bootstrap runs to execute. Usually need to be larger than 1,000.
+```
 
 ## Code of Conduct
 
