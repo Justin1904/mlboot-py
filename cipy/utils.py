@@ -8,3 +8,4 @@ def get_metric(metric_name):
 def get_ci(ci_name):
     ci = cis.__getattribute__(ci_name)
     return ci
+
