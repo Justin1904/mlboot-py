@@ -6,7 +6,7 @@ learning (and other predictive) models using bootstrap resampling. It
 was created in collaboration by [Jeffrey Girard](https://jmgirard.com/)
 and [Zhun Liu](http://justin1904.github.io/); this version for Python is
 maintained by Zhun Liu and a similar version for R is
-maintained by Jeff Girard.
+maintained by Jeff Girard [here](https://github.com/jmgirard/mlboot).
 
 ## Installation
 
