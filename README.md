@@ -16,13 +16,15 @@ First clone this repo:
 git clone https://github.com/Justin1904/mlboot-py.git
 ```
 
-then add the path to the `cipy` folder of the cloned repo to your `PYTHONPATH` environment variable. For example, on Ubuntu you could add the following line to your `.bashrc` file:
+then add the path to the `mlboot` folder of the cloned repo to your `PYTHONPATH` environment variable. For example, on Ubuntu you could add the following line to your `.bashrc` file:
 
 ``` bash
-export PYTHONPATH="/path/to/mlboot-py/cipy:$PYTHONPATH"
+export PYTHONPATH="/path/to/mlboot-py/mlboot:$PYTHONPATH"
 ```
 
-just replace `/path/to/mlboot-py/cipy` with the actual path you cloned the repo to.
+just replace `/path/to/mlboot-py/mlboot` with the actual path you cloned the repo to.
+
+(This is a early version and was a prototype developed within the duration of a Hackathon. There are quite some redundancy in code and some low-hanging fruit in performance optimization. We will be working on perfecting it in the future, but meanwhile feel free to contribute if you have great suggestions and ideas on how to improve it.)
 
 ## Usage
 
