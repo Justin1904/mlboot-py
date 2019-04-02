@@ -3,7 +3,7 @@ import scipy
 import sklearn
 
 from sklearn.utils import resample
-from utils import get_ci, get_metric
+from mlboot.utils import get_ci, get_metric
 
 def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000):
 

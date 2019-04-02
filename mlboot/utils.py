@@ -1,4 +1,4 @@
-import confidence_intervals as cis
+import mlboot.confidence_intervals as cis
 from sklearn import metrics
 
 def get_metric(metric_name):
