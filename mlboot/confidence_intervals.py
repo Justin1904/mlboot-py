@@ -24,17 +24,18 @@ def bin_search(arr, val, start=0, end=None):
             end = mid
     return start
 
-def log(lo, hi, alpha, n_samples, n_boot, method, comment=None):
+def log(metric, lo, hi, alpha, n_samples, n_boot, method, comment=None):
     '''
     Logging the CI info
     '''
-    print("="*40)
+    print("="*80)
     if comment is not None:
         print(comment)
-    print(f"Confidence Interval: [{round(lo, 4)}, {round(hi, 4)}], confidence level: {1-alpha}")
+    print(f"Confidence Interval: [{round(lo, 4)}, {round(hi, 4)}], metric value: {metric}")
+    print(f"confidence level: {1-alpha}")
     print(f"Number of samples in each bootstrap: {n_samples}\nNumber of total bootstrap runs: {n_boot}")
     print(f"Confidence interval type: {method}")
-    print("="*40)
+    print("="*80)
 
 
 def groupby(a, axis=0):
@@ -152,7 +153,7 @@ def bca(preds, labels, score_func, cluster, confidence_level, sample_size, num_b
     a, b = compute_bca_CI(confidence_level, bias_correction, accel)
     lower = np.quantile(scores, a)
     upper = np.quantile(scores, b)
-    log(lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'BCa')
+    log(full_score, lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'BCa')
     return lower, upper, scores
 
 
@@ -192,9 +193,9 @@ def paired_bca(preds1, preds2, labels, score_func, cluster, confidence_level, sa
     upper1 = np.quantile(scores1, b1)
     lower2 = np.quantile(scores2, a2)
     upper2 = np.quantile(scores2, b2)
-    log(lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for the different between two model (model2 - model1)")
-    log(lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for model1")
-    log(lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for model2")
+    log(full_score2 - full_score1, lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for the different between two model (model2 - model1)")
+    log(full_score1, lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for model1")
+    log(full_score2, lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for model2")
     return lower, upper, scores
 
 
@@ -209,7 +210,7 @@ def percentile(preds, labels, score_func, cluster, confidence_level, sample_size
     scores = sorted(scores)
     lower = np.quantile(scores, (1-confidence_level)/2)
     upper = np.quantile(scores, (1+confidence_level)/2)
-    log(lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'percentile')
+    log(score_func(labels, preds), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'percentile')
     return lower, upper, scores
 
 
@@ -233,9 +234,9 @@ def paired_percentile(preds1, preds2, labels, score_func, cluster, confidence_le
     upper1 = np.quantile(scores1, (1+confidence_level)/2)
     lower2 = np.quantile(scores2, (1-confidence_level)/2)
     upper2 = np.quantile(scores2, (1+confidence_level)/2)
-    log(lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for the difference between the two model (model2 - model1).")
-    log(lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model1.")
-    log(lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
+    log(score_func(labels, preds2) - score_func(labels, preds1), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for the difference between the two model (model2 - model1).")
+    log(score_func(labels, preds1), lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model1.")
+    log(score_func(lables, preds2), lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
     return lower, upper, scores
 
 
@@ -252,5 +253,5 @@ def cluster_percentile(preds, labels, score_func, cluster, confidence_level, sam
     boot_scores = sorted(boot_scores)
     lower = np.quantile(boot_scores, (1-confidence_level)/2)
     upper = np.quantile(boot_scores, (1+confidence_level)/2)
-    log(lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'cluster percentile')
+    log(score_func(labels, preds), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'cluster percentile')
     return lower, upper, boot_scores
