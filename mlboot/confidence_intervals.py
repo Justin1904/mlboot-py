@@ -236,7 +236,7 @@ def paired_percentile(preds1, preds2, labels, score_func, cluster, confidence_le
     upper2 = np.quantile(scores2, (1+confidence_level)/2)
     log(score_func(labels, preds2) - score_func(labels, preds1), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for the difference between the two model (model2 - model1).")
     log(score_func(labels, preds1), lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model1.")
-    log(score_func(lables, preds2), lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
+    log(score_func(labels, preds2), lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
     return lower, upper, scores
 
 
