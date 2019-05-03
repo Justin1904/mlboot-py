@@ -154,7 +154,7 @@ def bca(preds, labels, score_func, cluster, confidence_level, sample_size, num_b
     lower = np.quantile(scores, a)
     upper = np.quantile(scores, b)
     log(full_score, lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'BCa')
-    return lower, upper, scores
+    return lower, upper, scores, full_score
 
 
 def paired_bca(preds1, preds2, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):
@@ -196,7 +196,7 @@ def paired_bca(preds1, preds2, labels, score_func, cluster, confidence_level, sa
     log(full_score2 - full_score1, lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for the different between two model (model2 - model1)")
     log(full_score1, lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for model1")
     log(full_score2, lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired BCa', comment="Confidence interval for model2")
-    return lower, upper, scores
+    return lower, upper, scores, full_score1, full_score2
 
 
 def percentile(preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):
@@ -211,7 +211,7 @@ def percentile(preds, labels, score_func, cluster, confidence_level, sample_size
     lower = np.quantile(scores, (1-confidence_level)/2)
     upper = np.quantile(scores, (1+confidence_level)/2)
     log(score_func(labels, preds), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'percentile')
-    return lower, upper, scores
+    return lower, upper, scores, score_func(labels, preds)
 
 
 def paired_percentile(preds1, preds2, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):
@@ -237,7 +237,7 @@ def paired_percentile(preds1, preds2, labels, score_func, cluster, confidence_le
     log(score_func(labels, preds2) - score_func(labels, preds1), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for the difference between the two model (model2 - model1).")
     log(score_func(labels, preds1), lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model1.")
     log(score_func(labels, preds2), lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
-    return lower, upper, scores
+    return lower, upper, scores, score_func(labels, preds1), score_func(labels, preds2)
 
 
 def cluster_percentile(preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):
@@ -254,4 +254,4 @@ def cluster_percentile(preds, labels, score_func, cluster, confidence_level, sam
     lower = np.quantile(boot_scores, (1-confidence_level)/2)
     upper = np.quantile(boot_scores, (1+confidence_level)/2)
     log(score_func(labels, preds), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'cluster percentile')
-    return lower, upper, boot_scores
+    return lower, upper, boot_scores, score_func(labels, preds)
