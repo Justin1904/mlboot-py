@@ -55,7 +55,7 @@ def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci=
 
     # run the statistical test
     ci_func = get_ci(type_of_ci)
-    lo, hi, scores = ci_func(*preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap)
-    return lo, hi, scores
+    lower, upper, scores, full_score = ci_func(*preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap)
+    return lower, upper, scores, full_score
 
 
