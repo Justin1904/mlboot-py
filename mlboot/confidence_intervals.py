@@ -68,7 +68,7 @@ def bca_accel_param(preds, labels, score_func):
     return ahat
 
 
-def paired_bca_accel_param(preds1, preds2, labels, score_func):
+def paired_bca_accel_param(preds1, preds2, labels1, labels2, score_func):
     # estimate the acceleration: 1) jackknife sampling the scores; 2) compute statistic
     jack_scores = []
     jack_scores1 = []
@@ -77,15 +77,23 @@ def paired_bca_accel_param(preds1, preds2, labels, score_func):
         if isinstance(preds1, list):
             subset_preds1 = preds1[:i] + preds1[i+1:]
             subset_preds2 = preds2[:i] + preds2[i+1:]
-            subset_labels = labels[:i] + labels[i+1:]
+            subset_labels1 = labels1[:i] + labels1[i+1:]
+            if labels2 is None:
+                subset_labels2 = subset_labels1
+            else:
+                subset_labels2 = labels2[:i] + labels2[i + 1:]
         elif isinstance(preds1, np.ndarray):
             subset_preds1 = np.concatenate((preds1[:i], preds1[i+1:]), axis=0)
             subset_preds2 = np.concatenate((preds2[:i], preds2[i+1:]), axis=0)
-            subset_labels = np.concatenate((labels[:i], labels[i+1:]), axis=0)
+            subset_labels1 = np.concatenate((labels1[:i], labels1[i+1:]), axis=0)
+            if labels2 is None:
+                subset_labels1 = subset_labels1
+            else:
+                subset_labels2 = np.concatenate((labels2[:i], labels2[i+1:]), axis=0)
         else:
             raise TypeError("Make sure your predictions are either lists or numpy arrays.")
-        subset_scores1 = score_func(subset_labels, subset_preds1)
-        subset_scores2 = score_func(subset_labels, subset_preds2)
+        subset_scores1 = score_func(subset_labels1, subset_preds1)
+        subset_scores2 = score_func(subset_labels2, subset_preds2)
         subset_scores = subset_scores2 - subset_scores1
         jack_scores.append(subset_scores)
         jack_scores1.append(subset_scores1)
@@ -157,29 +165,33 @@ def bca(preds, labels, score_func, cluster, confidence_level, sample_size, num_b
     return lower, upper, scores, full_score
 
 
-def paired_bca(preds1, preds2, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):
+def paired_bca(preds1, preds2, labels1, labels2, score_func, cluster, confidence_level, sample_size, num_bootstrap):
     if cluster is not None:
         print("Non-clustered confidence interval method chosen, ignoring provided cluster information.")
     scores = []
     scores1 = []
     scores2 = []
+
+    if labels2 is None:
+        labels2 = labels1
+
     for _ in tqdm(range(num_bootstrap)):
-        subset_preds1, subset_preds2, subset_labels = resample(preds1, preds2, labels, n_samples=sample_size)
-        subset_scores1 = score_func(subset_labels, subset_preds1)
-        subset_scores2 = score_func(subset_labels, subset_preds2)
+        subset_preds1, subset_preds2, subset_labels1, subset_labels2 = resample(preds1, preds2, labels1, labels2, n_samples=sample_size)
+        subset_scores1 = score_func(subset_labels1, subset_preds1)
+        subset_scores2 = score_func(subset_labels2, subset_preds2)
         subset_scores = subset_scores2 - subset_scores1
         scores.append(subset_scores)
         scores1.append(subset_scores1)
         scores2.append(subset_scores2)
 
     # calculate bias-correction and acceleration
-    full_score1 = score_func(labels, preds1)
-    full_score2 = score_func(labels, preds2)
+    full_score1 = score_func(labels1, preds1)
+    full_score2 = score_func(labels2, preds2)
     full_score = full_score2 - full_score1
     bias_correction = bca_bias_correction(scores, full_score)
     bias_correction1 = bca_bias_correction(scores1, full_score1)
     bias_correction2 = bca_bias_correction(scores2, full_score2)
-    accel, accel1, accel2 = paired_bca_accel_param(preds1, preds2, labels, score_func)
+    accel, accel1, accel2 = paired_bca_accel_param(preds1, preds2, labels1, labels2, score_func)
 
     # calculate bca interval
     a, b = compute_bca_CI(confidence_level, bias_correction, accel)
@@ -214,16 +226,20 @@ def percentile(preds, labels, score_func, cluster, confidence_level, sample_size
     return lower, upper, scores, score_func(labels, preds)
 
 
-def paired_percentile(preds1, preds2, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):
+def paired_percentile(preds1, preds2, labels1, labels2, score_func, cluster, confidence_level, sample_size, num_bootstrap):
     if cluster is not None:
         print("Non-clustered confidence interval method chosen, ignoring provided cluster information.")
     scores = []
     scores1 = []
     scores2 = []
+
+    if labels2 is None:
+        labels2 = labels1
+
     for _ in tqdm(range(num_bootstrap)):
-        subset_preds1, subset_preds2, subset_labels = resample(preds1, preds2, labels, n_samples=sample_size)
-        subset_scores1 = score_func(subset_labels, subset_preds1)
-        subset_scores2 = score_func(subset_labels, subset_preds2)
+        subset_preds1, subset_preds2, subset_labels1, subset_labels2 = resample(preds1, preds2, labels1, labels2, n_samples=sample_size)
+        subset_scores1 = score_func(subset_labels1, subset_preds1)
+        subset_scores2 = score_func(subset_labels2, subset_preds2)
         subset_scores = subset_scores2 - subset_scores1
         scores.append(subset_scores)
         scores1.append(subset_scores1)
@@ -234,10 +250,10 @@ def paired_percentile(preds1, preds2, labels, score_func, cluster, confidence_le
     upper1 = np.quantile(scores1, (1+confidence_level)/2)
     lower2 = np.quantile(scores2, (1-confidence_level)/2)
     upper2 = np.quantile(scores2, (1+confidence_level)/2)
-    log(score_func(labels, preds2) - score_func(labels, preds1), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for the difference between the two model (model2 - model1).")
-    log(score_func(labels, preds1), lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model1.")
-    log(score_func(labels, preds2), lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
-    return lower, upper, scores, score_func(labels, preds1), score_func(labels, preds2)
+    log(score_func(labels2, preds2) - score_func(labels1, preds1), lower, upper, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for the difference between the two model (model2 - model1).")
+    log(score_func(labels1, preds1), lower1, upper1, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model1.")
+    log(score_func(labels2, preds2), lower2, upper2, 1-confidence_level, sample_size, num_bootstrap, 'paired percentile', comment="Confidence interval for model2.")
+    return lower, upper, scores, score_func(labels1, preds1), score_func(labels2, preds2)
 
 
 def cluster_percentile(preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap):

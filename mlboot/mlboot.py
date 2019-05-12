@@ -6,30 +6,39 @@ from sklearn.utils import resample
 from mlboot.utils import get_ci, get_metric
 from pdb import set_trace
 
-def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000):
+def BootstrapCI(pred1, labels1, score_func, pred2=None, labels2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000):
 
     # ensure all input are converted into numpy for convenience reasons
     pred1 = np.array(pred1)
-    labels = np.array(labels)
+    labels1 = np.array(labels1)
 
     if pred2 is not None:
         pred2 = np.array(pred2)
+
+    if labels2 is not None:
+        labels2 = np.array(labels2)
+
+    if pred2 is None and labels2 is not None:
+        raise ValueError("Second set of labels cannot be applied when there is no second set of input.")
 
     if cluster is not None:
         cluster = np.array(cluster)
 
     # check the validity of arguments
-    assert len(pred1) == len(labels), f"There are {len(pred1)} predictions but {len(labels)} ground truth entries."
+    assert len(pred1) == len(labels1), f"There are {len(pred1)} predictions but {len(labels1)} ground truth entries."
 
     # check if the second model has same number of outputs
     if pred2 is not None:
         assert len(pred1) == len(pred2), f"There are {len(pred1)} predictions from model 1 but {len(pred2)} predictions from model 2."
 
+    if labels2 is not None:
+        assert len(pred2) == len(labels2), f"There are {len(pred2)} predictions for model 2 but only {len(labels2)} ground truth entries for it."
+
     # check if we are using the correct ci method
     if type_of_ci.startswith("paired") and pred2 is None:
         raise ValueError("Predictions from a second model is required to compute paired confidence intervals.")
 
-    if not type_of_ci.startswith("paired") and pred2 is not None:
+    if not type_of_ci.startswith("paired") and (pred2 is not None or labels2 is not None):
         raise ValueError("Non-paired confidence intervals cannot be applied to a pair of model outputs.")
 
     assert 0.0 < confidence_level < 1.0, "Confidence level must be within range of [0.0, 1.0]"
@@ -47,16 +56,19 @@ def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci=
 
     # get the bootstrap sample size if not specified
     if sample_size is None:
-        sample_size = len(labels)
+        sample_size = len(labels1)
 
     if pred2 is None:
         preds = (pred1,)
     else:
         preds = (pred1, pred2)
 
+    if labels2 is None:
+        labels = (labels1, None)
+    else:
+        labels = (labels1, labels2)
+
     # run the statistical test
     ci_func = get_ci(type_of_ci)
-    lower, upper, scores, *full_score = ci_func(*preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap)
+    lower, upper, scores, *full_score = ci_func(*preds, *labels, score_func, cluster, confidence_level, sample_size, num_bootstrap)
     return lower, upper, scores, full_score
-
-
