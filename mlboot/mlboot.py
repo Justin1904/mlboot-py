@@ -4,18 +4,19 @@ import sklearn
 
 from sklearn.utils import resample
 from mlboot.utils import get_ci, get_metric
+from pdb import set_trace
 
 def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci='bca', confidence_level=0.95, sample_size=None, num_bootstrap=2000):
 
     # ensure all input are converted into numpy for convenience reasons
-    pred1 = np.array(pred1).reshape(-1)
-    labels = np.array(labels).reshape(-1)
+    pred1 = np.array(pred1)
+    labels = np.array(labels)
 
     if pred2 is not None:
-        pred2 = np.array(pred2).reshape(-1)
+        pred2 = np.array(pred2)
 
     if cluster is not None:
-        cluster = np.array(cluster).reshape(-1)
+        cluster = np.array(cluster)
 
     # check the validity of arguments
     assert len(pred1) == len(labels), f"There are {len(pred1)} predictions but {len(labels)} ground truth entries."
@@ -55,7 +56,7 @@ def BootstrapCI(pred1, labels, score_func, pred2=None, cluster=None, type_of_ci=
 
     # run the statistical test
     ci_func = get_ci(type_of_ci)
-    lower, upper, scores, full_score = ci_func(*preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap)
+    lower, upper, scores, *full_score = ci_func(*preds, labels, score_func, cluster, confidence_level, sample_size, num_bootstrap)
     return lower, upper, scores, full_score
 
 
