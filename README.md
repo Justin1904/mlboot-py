@@ -1,4 +1,4 @@
-## Aug. 7: this repo is currently undergoing some changes and the code may not run as expected, please come back later!
+#### this repo is currently undergoing some changes and the code may not run as expected, please come back later!
 
 # mlboot
 
