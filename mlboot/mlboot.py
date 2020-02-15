@@ -4,120 +4,17 @@ import sklearn
 
 from sklearn.utils import resample
 from mlboot.utils import get_ci, get_metric
+from mlboot.confidence_intervals import (
+    percentile_estimator,
+    bca_estimator,
+)
 
 from pdb import set_trace
 
 
-def BootstrapCI(
-    pred1,
-    labels1,
-    score_func,
-    pred2=None,
-    labels2=None,
-    cluster=None,
-    type_of_ci="bca",
-    confidence_level=0.95,
-    sample_size=None,
-    num_bootstrap=2000,
-):
-
-    # ensure all input are converted into numpy for convenience reasons
-    pred1 = np.array(pred1)
-    labels1 = np.array(labels1)
-
-    if pred2 is not None:
-        pred2 = np.array(pred2)
-
-    if labels2 is not None:
-        labels2 = np.array(labels2)
-
-    if pred2 is None and labels2 is not None:
-        raise ValueError(
-            "Second set of labels cannot be applied when there is no second set of input."
-        )
-
-    if cluster is not None:
-        cluster = np.array(cluster)
-
-    # check the validity of arguments
-    assert len(pred1) == len(
-        labels1
-    ), f"There are {len(pred1)} predictions but {len(labels1)} ground truth entries."
-
-    # check if the second model has same number of outputs
-    if pred2 is not None:
-        assert len(pred1) == len(
-            pred2
-        ), f"There are {len(pred1)} predictions from model 1 but {len(pred2)} predictions from model 2."
-
-    if labels2 is not None:
-        assert len(pred2) == len(
-            labels2
-        ), f"There are {len(pred2)} predictions for model 2 but only {len(labels2)} ground truth entries for it."
-
-    # check if we are using the correct ci method
-    if type_of_ci.startswith("paired") and pred2 is None:
-        raise ValueError(
-            "Predictions from a second model is required to compute paired confidence intervals."
-        )
-
-    if not type_of_ci.startswith("paired") and (
-        pred2 is not None or labels2 is not None
-    ):
-        raise ValueError(
-            "Non-paired confidence intervals cannot be applied to a pair of model outputs."
-        )
-
-    assert (
-        0.0 < confidence_level < 1.0
-    ), "Confidence level must be within range of [0.0, 1.0]"
-
-    if cluster is None and type_of_ci.startswith("cluster"):
-        raise ValueError(
-            "If no clustering info is provided please use non-clustered CI methods for better performance."
-        )
-
-    # get the score function if it is supported by sklearn
-    if isinstance(score_func, str):
-        try:
-            score_func = get_metric(score_func)
-        except AttributeError:
-            print(
-                f'Specified metric "{score_func}" is not supported. Please refer to the documentation for available metrics or build your own.'
-            )
-            exit(0)
-
-    # get the bootstrap sample size if not specified
-    if sample_size is None:
-        sample_size = len(labels1)
-
-    if pred2 is None:
-        preds = (pred1,)
-    else:
-        preds = (pred1, pred2)
-
-    if labels2 is None:
-        labels = (labels1, None)
-    else:
-        labels = (labels1, labels2)
-
-    # run the statistical test
-    ci_func = get_ci(type_of_ci)
-    lower, upper, scores, *full_score = ci_func(
-        *preds,
-        *labels,
-        score_func,
-        cluster,
-        confidence_level,
-        sample_size,
-        num_bootstrap,
-    )
-    return lower, upper, scores, full_score
-
-
 CI_METHOD_DICT = {
     "percentile": percentile_estimator,
-    "bca": bias_corrected_accelerated_estimator,
+    "bca": bca_estimator,
 }
 
 
@@ -158,7 +55,7 @@ class ConfidenceIntervalEstimator:
         self.n_bootstrap = n_bootstrap
         self.n_samples = n_samples  # if set to None, will be dynamically set as it processes input of different sizes
         self.method = method
-        self.ci_estimator = CI_METHOD_DICT[method]
+        self.estimator = CI_METHOD_DICT[method]
 
     def _compute_scores(self, y_pred, y_true):
         pointwise_scores = self.score_fn(y_pred, y_true)
@@ -182,10 +79,8 @@ class ConfidenceIntervalEstimator:
 
     def __call__(self, y_pred, y_true, return_samples=False):
         pointwise_scores, global_avg_score = self._compute_scores(y_pred, y_true)
-        avg_score_samples = self._sample_avg_scores(pointwise_scores)
-        ci_lo, ci_hi = self.ci_estimator(
-            avg_score_samples, self.confidence_level, return_samples=return_samples
-        )
+        # avg_score_samples = self._sample_avg_scores(pointwise_scores)
+        ci_lo, ci_hi, avg_score_samples = self.estimator(pointwise_scores, self.confidence_level, self.n_bootstrap, self.n_samples)
         if return_samples:
             return global_avg_score, (ci_lo, ci_hi), avg_score_samples
         else:
@@ -227,10 +122,7 @@ class PairedConfidenceIntervalEstimator(ConfidenceIntervalEstimator):
         )
         delta_pointwise_scores = pointwise_scores_ours - pointwise_scores_baseline
         delta_global_avg_score = global_avg_score_ours - global_avg_score_baseline
-        avg_delta_score_samples = self._sample_avg_scores(delta_pointwise_scores)
-        ci_lo, ci_hi = self.ci_estimator(
-            delta_pointwise_scores, self.confidence_level, return_samples=return_samples
-        )
+        ci_lo, ci_hi, avg_delta_score_samples = self.estimator(delta_pointwise_scores, self.confidence_level, self.n_bootstrap, self.n_samples)
         if return_samples:
             return delta_global_avg_score, (ci_lo, ci_hi), avg_delta_score_samples
         else:
