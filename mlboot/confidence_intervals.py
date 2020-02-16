@@ -42,9 +42,9 @@ def bca_bias_correction(scores, full_score):
 
 def bca_accel_param(samples):
     jackknife_scores = jackknife_avg(samples)
-    jackknife_avg = jackknife_scores.mean()
-    accel_numerator = ((jackknife_avg - jackknife_scores) ** 3).sum()
-    accel_denominator = ((jackknife_avg - jackknife_scores) ** 2).sum()
+    jackknife_avg_scores = jackknife_scores.mean()
+    accel_numerator = ((jackknife_avg_scores - jackknife_scores) ** 3).sum()
+    accel_denominator = ((jackknife_avg_scores - jackknife_scores) ** 2).sum()
     accel_param = accel_numerator / (6 * accel_denominator ** (3 / 2))
     return accel_param
 
