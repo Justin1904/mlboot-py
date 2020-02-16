@@ -1,1 +1,5 @@
-from mlboot.mlboot import BootstrapCI as BootstrapCI
+from mlboot.mlboot import (
+    ConfidenceIntervalEstimator,
+    PairedConfidenceIntervalEstimator,
+    ClusteredConfidenceIntervalEstimator,
+)

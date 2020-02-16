@@ -3,7 +3,6 @@ import scipy
 import sklearn
 
 from sklearn.utils import resample
-from mlboot.utils import get_ci, get_metric
 from mlboot.confidence_intervals import (
     percentile_estimator,
     bca_estimator,
@@ -91,16 +90,9 @@ class PairedConfidenceIntervalEstimator(ConfidenceIntervalEstimator):
     """
     Class for paired confidence interval estimator. This is used when you want to compare the differences between two models.
 
-    Args:
-         - score_fn [Callable]: a scoring function that scores each prediction and each ground truth. An important assumption is that 
-                                the overall score of a set of predictions will be the average of scores of each prediction.
-         - method [str]: 'bca'/'percentile', the method to choose for estimating the confidence interval, default to 'bca'.
-         - confidence_level [float]: the confidence level of the estimation. The more confidence, the wider the interval. Default to 0.95.
-         - n_bootstrap [int]: the number of Bootstrap sampling to do for estimating the confidence interval. Default to 2000.
-         - n_samples [int]: the sample size for each Bootstrap sampling. Default to None, will use y_pred.shape[0] as n_samples in this case.
-
     Input:
-         - y_pred [np.ndarray]: an array of predictions, batch dimension must be on the first dimension.
+         - y_pred_ours [np.ndarray]: an array of predictions from our model, batch dimension must be on the first dimension.
+         - y_pred_baseline [np.ndarray]: an array of predictions from a baseline model, batch dimension must be on the first dimension.
          - y_true [np.ndarray]: an array with identically-sized batch dimension as y_pred.
          - return_samples [bool]: whether or not to return the scores on Bootstrap-sampled subsets.
 
