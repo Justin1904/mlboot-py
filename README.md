@@ -1,4 +1,6 @@
-#### this repo is currently undergoing some changes and the code may not run as expected, please come back later!
+#### The dev branch has a working version with new API. There's no documentation yet but the docstring should be self-explanatory.
+
+#### This repo is currently undergoing some changes and the code may not run as expected, please come back later!
 
 # mlboot
 
