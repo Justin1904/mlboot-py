@@ -1,23 +1,9 @@
-"""
-Here we define a list of commonly-used pointwise metrics
-"""
-import numpy as np
+from sklearn.utils import resample
 
 
-def pointwise_binary_score(y_pred, y_true):
-    """
-    Elementwise 0-1 score. Pointwise equivalent of accuracy score.
-    """
-    return y_pred == y_true
+def resample_and_average(scores, n_samples):
+    return resample(scores, n_samples=n_samples).mean()
 
 
-def pointwise_mae(y_pred, y_true):
-    return np.abs(y_pred - y_true)
-
-
-def pointwise_mse(y_pred, y_true):
-    return (y_pred - y_true) ** 2
-
-
-def pointwise_rmse(y_pred, y_true):
-    return pointwise_mse(y_pred, y_true) ** 0.5
+def resample_and_score(y_pred, y_true, score_fn, n_samples):
+    return score_fn(resample(y_pred, y_true, n_samples=n_samples))
